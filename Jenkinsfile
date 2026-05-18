@@ -1,6 +1,10 @@
 pipeline {
-
     agent any
+
+    environment {
+        IMAGE_NAME = "fenotokyrak/flask-devops"
+        IMAGE_TAG = "1.0"
+    }
 
     stages {
 
@@ -13,26 +17,34 @@ pipeline {
 
         stage('Python Tests') {
             steps {
-                bat 'python test.py'
+                sh 'python3 test.py'
             }
         }
 
         stage('Docker Build') {
             steps {
-                bat 'docker build -t localhost:4000/flask_hello .'
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
             }
         }
 
         stage('Docker Push') {
             steps {
-                bat 'docker push localhost:4000/flask_hello'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+
+                    sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+                }
             }
         }
 
         stage('Kubernetes Deploy') {
             steps {
-                bat 'kubectl apply -f deployment.yaml'
-                bat 'kubectl apply -f service.yaml'
+                sh 'kubectl apply -f deployment.yaml'
             }
         }
     }
