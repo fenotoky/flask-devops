@@ -19,7 +19,10 @@ pipeline {
                 sh '''
                 python3 -m venv venv
                 . venv/bin/activate
+
+                pip install --upgrade pip
                 pip install -r requirements.txt
+
                 python test.py
                 '''
             }
@@ -27,20 +30,26 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh '''
+                docker build -t $IMAGE_NAME .
+                '''
             }
         }
 
         stage('Docker Push') {
             steps {
-                sh 'docker push $IMAGE_NAME'
+                sh '''
+                docker push $IMAGE_NAME
+                '''
             }
         }
 
         stage('Kubernetes Deploy') {
             steps {
-                sh 'kubectl apply -f deployment.yaml'
-                sh 'kubectl apply -f service.yaml'
+                sh '''
+                kubectl apply -f deployment.yaml
+                kubectl apply -f service.yaml
+                '''
             }
         }
     }
