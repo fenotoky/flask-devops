@@ -3,6 +3,7 @@ kind: Service
 
 metadata:
   name: flask-service
+  namespace: jenkins
 
 spec:
   type: NodePort
@@ -14,4 +15,4 @@ spec:
     - protocol: TCP
       port: 5000
       targetPort: 5000
-      nodePort: 30007
+      nodePort: 30080
